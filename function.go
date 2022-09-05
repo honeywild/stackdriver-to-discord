@@ -30,6 +30,7 @@ type Incident struct {
 
 type DiscordWebhook struct {
 	Content string  `json:"content"`
+	Avatar  string  `json:"avatar_url"`
 	Embeds  []Embed `json:"embeds,omitempty"`
 }
 
@@ -47,7 +48,7 @@ type Field struct {
 	Inline bool   `json:"inline"`
 }
 
-func toDiscord(notification Notification) DiscordWebhook {
+func toDiscord(notification Notification, discordContent string, discordAvatarURL string) DiscordWebhook {
 	startedAt := "-"
 	endedAt := "-"
 
@@ -106,6 +107,8 @@ func toDiscord(notification Notification) DiscordWebhook {
 				},
 			},
 		},
+		Content: discordContent,
+		Avatar:  discordAvatarURL,
 	}
 }
 
@@ -130,6 +133,20 @@ func F(w http.ResponseWriter, r *http.Request) {
 		log.Fatalln(err)
 	}
 
+	discordAvatarURL := os.Getenv("DISCORD_AVATAR_URL")
+	if discordAvatarURL == "" {
+		log.Fatalln("`DISCORD_AVATAR_URL` is not set in the environment")
+	}
+
+	if _, err := url.Parse(discordAvatarURL); err != nil {
+		log.Fatalln(err)
+	}
+
+	discordContent := os.Getenv("DISCORD_CONTENT")
+	if discordAvatarURL == "" {
+		log.Fatalln("`DISCORD_CONTENT` is not set in the environment")
+	}
+
 	if r.Method != "POST" || r.Header.Get("Content-Type") != "application/json" {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("invalid request"))
@@ -141,7 +158,7 @@ func F(w http.ResponseWriter, r *http.Request) {
 		log.Fatalln(err)
 	}
 
-	discordWebhook := toDiscord(notification)
+	discordWebhook := toDiscord(notification, discordAvatarURL, discordContent)
 
 	payload, err := json.Marshal(discordWebhook)
 	if err != nil {
