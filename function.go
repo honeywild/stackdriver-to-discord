@@ -48,7 +48,7 @@ type Field struct {
 	Inline bool   `json:"inline"`
 }
 
-func toDiscord(notification Notification, discordContent string, discordAvatarURL string) DiscordWebhook {
+func toDiscord(notification Notification, discordAvatarURL string, discordContent string) DiscordWebhook {
 	startedAt := "-"
 	endedAt := "-"
 
@@ -143,7 +143,7 @@ func F(w http.ResponseWriter, r *http.Request) {
 	}
 
 	discordContent := os.Getenv("DISCORD_CONTENT")
-	if discordAvatarURL == "" {
+	if discordContent == "" {
 		log.Fatalln("`DISCORD_CONTENT` is not set in the environment")
 	}
 
